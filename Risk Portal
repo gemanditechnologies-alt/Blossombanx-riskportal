@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Blossombanx.riskportal</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{ color-scheme: light; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; }
+  img{ max-width:100%; }
+  [hidden]{ display:none !important; }
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#f5f7f4;
+    --ink:#16231f; --muted:#5c6b64; --line:#dbe1db;
+    --accent:#8a6d3b; --accent-ink:#4a3a1f; --accent-soft:#f1e8d8;
+    --good:#2f7d5c; --good-bg:#e3f1e9;
+    --bad:#b3463c; --bad-bg:#fbe9e7;
+    --warn:#c08a2e; --warn-bg:#f8eed9;
+    --pending:#8a938e; --pending-bg:#eceeec;
+    --gold:#a9822e; --gold-bg:#f7ecd3;
+    --shadow: 0 1px 2px rgba(22,35,31,.06), 0 1px 1px rgba(22,35,31,.04);
+    --font-display: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+    --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0f1715; --surface:#17211e; --surface-2:#1d2723;
+      --ink:#e9ece9; --muted:#93a39c; --line:#2a3733;
+      --accent:#d1a054; --accent-ink:#2a2013; --accent-soft:#2a2417;
+      --good:#4fae82; --good-bg:#163527;
+      --bad:#e07268; --bad-bg:#3a1c18;
+      --warn:#d9a94a; --warn-bg:#3a2e14;
+      --pending:#7c8b85; --pending-bg:#1c2521;
+      --gold:#e0b95c; --gold-bg:#332a13;
+      --shadow: 0 1px 2px rgba(0,0,0,.35), 0 1px 1px rgba(0,0,0,.25);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0f1715; --surface:#17211e; --surface-2:#1d2723;
+    --ink:#e9ece9; --muted:#93a39c; --line:#2a3733;
+    --accent:#d1a054; --accent-ink:#2a2013; --accent-soft:#2a2417;
+    --good:#4fae82; --good-bg:#163527;
+    --bad:#e07268; --bad-bg:#3a1c18;
+    --warn:#d9a94a; --warn-bg:#3a2e14;
+    --pending:#7c8b85; --pending-bg:#1c2521;
+    --gold:#e0b95c; --gold-bg:#332a13;
+    --shadow: 0 1px 2px rgba(0,0,0,.35), 0 1px 1px rgba(0,0,0,.25);
+  }
+
+  body{ background:var(--bg); color:var(--ink); font-family:var(--font-body); }
+  #app, .topbar, .tabs{ max-width:980px; margin:0 auto; padding-inline:16px; box-sizing:border-box; }
+  h1,h2,h3{ font-family:var(--font-display); text-wrap:balance; margin:0; }
+  table{ font-variant-numeric:tabular-nums; }
+  .num{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
+  button, input, select, textarea{ font-family:inherit; font-size:14px; color:var(--ink); }
+  a{ color:var(--accent); }
+
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding-block:14px 10px; flex-wrap:wrap; }
+  .brand{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .brand h1{ font-size:22px; font-weight:600; letter-spacing:.2px; }
+  .brand .sub{ color:var(--muted); font-size:12.5px; text-transform:uppercase; letter-spacing:.08em; }
+  .topbar-right{ display:flex; align-items:center; gap:14px; }
+  .balance-tile{ text-align:right; }
+  .balance-tile .lbl{ font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; }
+  .balance-tile .val{ font-family:var(--font-mono); font-size:20px; font-weight:600; }
+  .updated-pill{
+    font-size:11px; font-weight:600; letter-spacing:.03em;
+    padding:4px 9px; border-radius:99px; border:1px solid var(--line); color:var(--muted);
+    white-space:nowrap;
+  }
+
+  .tabs{ display:flex; gap:4px; border-bottom:1px solid var(--line); overflow-x:auto; scrollbar-width:thin; }
+  .tab-btn{
+    background:none; border:none; padding:10px 12px; margin-bottom:-1px; cursor:pointer;
+    color:var(--muted); font-weight:500; font-size:13.5px; border-bottom:2px solid transparent; white-space:nowrap;
+  }
+  .tab-btn.active{ color:var(--ink); border-bottom-color:var(--accent); }
+  .tab-btn:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
+    outline:2px solid var(--accent); outline-offset:2px;
+  }
+
+  main{ padding-block:20px 48px; display:flex; flex-direction:column; gap:22px; }
+
+  .card{ background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:16px 18px; box-shadow:var(--shadow); }
+  .card h2{ font-size:15px; font-weight:600; }
+  .card-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+  .muted{ color:var(--muted); }
+  .hint{ font-size:12.5px; color:var(--muted); }
+
+  .stat-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; }
+  .stat-tile{ background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:12px 14px; display:flex; flex-direction:column; gap:4px; }
+  .stat-tile .lbl{ font-size:11.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+  .stat-tile .val{ font-family:var(--font-mono); font-size:19px; font-weight:600; }
+  .stat-tile .sub{ font-size:12px; color:var(--muted); }
+  .up{ color:var(--good); } .down{ color:var(--bad); }
+
+  .nonneg{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; }
+  .nonneg .item{ background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:12px 14px; }
+  .nonneg .item .n{ font-family:var(--font-mono); color:var(--accent); font-weight:600; font-size:12px; }
+  .nonneg .item .t{ font-weight:600; margin-top:2px; }
+  .nonneg .item .d{ font-size:12.5px; color:var(--muted); margin-top:2px; }
+
+  .pill{ display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:600; padding:3px 8px; border-radius:99px; }
+  .pill.good{ background:var(--good-bg); color:var(--good); }
+  .pill.bad{ background:var(--bad-bg); color:var(--bad); }
+  .pill.pending{ background:var(--pending-bg); color:var(--pending); }
+  .pill.warn{ background:var(--warn-bg); color:var(--warn); }
+  .pill.gold{ background:var(--gold-bg); color:var(--gold); }
+
+  .table-wrap{ overflow-x:auto; border:1px solid var(--line); border-radius:8px; }
+  table{ width:100%; border-collapse:collapse; min-width:520px; }
+  th,td{ text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); font-size:13.5px; white-space:nowrap; }
+  th{ font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); font-weight:600; background:var(--surface-2); }
+  tr:last-child td{ border-bottom:none; }
+  td.wrap{ white-space:normal; min-width:140px; }
+
+  .day-grid{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; }
+  .day-cell{ background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:6px; }
+  .day-cell .day-name{ font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:600; }
+
+  .field{ display:flex; flex-direction:column; gap:4px; }
+  .field label{ font-size:11.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+  .field input, .field select{ padding:7px 9px; border:1px solid var(--line); border-radius:6px; background:var(--surface); min-width:0; }
+  .form-row{ display:flex; flex-wrap:wrap; gap:10px; align-items:end; }
+  .field.grow{ flex:1; min-width:150px; }
+
+  .btn{ background:var(--accent); color:#fff; border:none; border-radius:7px; padding:8px 14px; font-weight:600; font-size:13px; cursor:pointer; white-space:nowrap; }
+  .btn:hover{ filter:brightness(1.05); }
+  .btn.secondary{ background:transparent; color:var(--ink); border:1px solid var(--line); }
+  .btn.small{ padding:5px 10px; font-size:12px; }
+
+  .empty-state{ text-align:center; padding:28px 12px; color:var(--muted); font-size:13.5px; }
+
+  .toast{ position:fixed; left:50%; bottom:22px; transform:translateX(-50%); background:var(--ink); color:var(--bg); padding:9px 16px; border-radius:8px; font-size:13px; box-shadow:var(--shadow); z-index:50; }
+
+  svg.chart text{ fill:var(--muted); font-family:var(--font-mono); font-size:10px; }
+  svg.chart .grid{ stroke:var(--line); stroke-width:1; }
+  svg.chart .target-line{ stroke:var(--accent); stroke-width:2; fill:none; stroke-dasharray:5 4; }
+  svg.chart .actual-line{ stroke:var(--good); stroke-width:2.5; fill:none; }
+  svg.chart .actual-dot{ fill:var(--good); }
+  svg.chart .target-dot{ fill:var(--accent); }
+
+  .score-wrap{ display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
+  .score-ring{ position:relative; width:112px; height:112px; flex:none; }
+  .score-ring svg{ width:100%; height:100%; transform:rotate(-90deg); }
+  .score-ring .track{ stroke:var(--line); fill:none; stroke-width:10; }
+  .score-ring .fill{ stroke:var(--accent); fill:none; stroke-width:10; stroke-linecap:round; transition:stroke-dashoffset .4s; }
+  .score-ring .num{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:var(--font-mono); }
+  .score-ring .num b{ font-size:26px; line-height:1; }
+  .score-ring .num span{ font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+  .tier-badge{ display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:99px; font-weight:600; font-size:13px; }
+  .badge-row{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+
+  .calc-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; }
+  .calc-result{ background:var(--accent-soft); border-radius:8px; padding:14px 16px; margin-top:14px; }
+  .calc-result .big{ font-family:var(--font-mono); font-size:24px; font-weight:600; color:var(--accent-ink); }
+
+  .log-list{ display:flex; flex-direction:column; gap:0; }
+  .log-item{ display:flex; gap:14px; padding:12px 0; border-bottom:1px solid var(--line); }
+  .log-item:last-child{ border-bottom:none; }
+  .log-item .date{ font-family:var(--font-mono); font-size:12px; color:var(--muted); white-space:nowrap; padding-top:1px; }
+  .log-item .note{ font-size:13.5px; }
+
+  textarea.report-box{ width:100%; min-height:260px; font-family:var(--font-mono); font-size:12.5px; padding:12px; border:1px solid var(--line); border-radius:8px; background:var(--surface-2); resize:vertical; }
+
+  @media (max-width:520px){
+    .day-grid{ grid-template-columns:1fr 1fr; }
+    .balance-tile{ text-align:left; }
+    .topbar{ flex-direction:column; align-items:flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><h1>Blossombanx</h1><span class="sub">Risk Ledger</span></div>
+  <div class="topbar-right">
+    <span class="updated-pill" id="updated-pill">–</span>
+    <div class="balance-tile"><div class="lbl">Current balance</div><div class="val num" id="topbar-balance">–</div></div>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs"></nav>
+<main id="app"></main>
+
+<script id="state-data" type="application/json">
+{
+  "meta": { "brand": "Blossombanx", "programStartLabel": "March 2026", "programStartBalance": 1615.44, "lastUpdated": "2026-09-18" },
+  "settings": { "dailyMaxPct": 2, "weeklyMaxPct": 5, "maxLosingTrades": 2 },
+  "weeks": [
+    {
+      "id": "w-2026-09-21",
+      "weekStart": "2026-09-21",
+      "openingBalance": 1841.39,
+      "days": [
+        { "day": "Mon", "pl": null, "status": "pending" },
+        { "day": "Tue", "pl": null, "status": "pending" },
+        { "day": "Wed", "pl": null, "status": "pending" },
+        { "day": "Thu", "pl": null, "status": "pending" },
+        { "day": "Fri", "pl": null, "status": "pending" }
+      ],
+      "notes": ""
+    }
+  ],
+  "positions": [],
+  "trades": [],
+  "scalingPlan": { "startBalance": 1841.39, "startMonth": "2026-09", "endMonth": "2028-04", "monthlyRatePct": 20 },
+  "changelog": [
+    { "date": "2026-09-18", "note": "Rebuilt as a self-contained dashboard for external hosting (no Claude account needed). Added Scorecard, Position Calculator, monthly/quarterly rollups, investor report export and this audit trail. Carried forward a live edit to the daily max loss rule (1% \u2192 2%) made from the previous version before the rebuild." },
+    { "date": "2026-09-17", "note": "Dashboard created. Seeded programme history since March 2026 and opened the week of 21\u201325 Sep 2026." }
+  ]
+}
+</script>
+
+<script id="app-script">
+(function(){
+  "use strict";
+
+  var state = JSON.parse(document.getElementById("state-data").textContent);
+  var activeTab = "overview";
+  var tradeFilter = "all";
+
+  var TABS = [
+    { id: "overview", label: "Overview" },
+    { id: "ledger", label: "Weekly Ledger" },
+    { id: "positions", label: "Positions" },
+    { id: "trades", label: "Trade Log" },
+    { id: "scorecard", label: "Scorecard" },
+    { id: "scaling", label: "Scaling Plan" },
+    { id: "calculator", label: "Calculator" },
+    { id: "audit", label: "Audit Trail" }
+  ];
+
+  var MONEY = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" });
+  var MONEY_COMPACT = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", notation: "compact", maximumFractionDigits: 1 });
+
+  function fmtMoney(n){ if(n===null||n===undefined||isNaN(n)) return "–"; return MONEY.format(n); }
+  function fmtMoneyCompact(n){ if(n===null||n===undefined||isNaN(n)) return "–"; return MONEY_COMPACT.format(n); }
+  function fmtPct(n, digits){ if(n===null||n===undefined||isNaN(n)) return "–"; return (n>=0?"+":"") + n.toFixed(digits===undefined?2:digits) + "%"; }
+  function esc(s){ return String(s===undefined||s===null?"":s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); }
+  function sum(arr){ return arr.reduce(function(a,b){ return a+b; },0); }
+  function avg(arr){ return arr.length? sum(arr)/arr.length : null; }
+  function fmtDate(iso){ var d=parseISODate(iso); return d.getUTCDate()+" "+MONTH_NAMES[d.getUTCMonth()]+" "+d.getUTCFullYear(); }
+
+  function parseISODate(s){ var p=s.split("-").map(Number); return new Date(Date.UTC(p[0],p[1]-1,p[2])); }
+  function toISODate(d){ return d.toISOString().slice(0,10); }
+  function addDays(iso, n){ var d=parseISODate(iso); d.setUTCDate(d.getUTCDate()+n); return toISODate(d); }
+  var MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  function weekLabel(weekStartISO){
+    var start = parseISODate(weekStartISO), end = parseISODate(addDays(weekStartISO,4));
+    var sameMonth = start.getUTCMonth()===end.getUTCMonth();
+    var startPart = start.getUTCDate() + (sameMonth?"":" "+MONTH_NAMES[start.getUTCMonth()]);
+    var endPart = end.getUTCDate()+" "+MONTH_NAMES[end.getUTCMonth()]+" "+end.getUTCFullYear();
+    return startPart+"–"+endPart;
+  }
+  function monthLabel(ym){ var p=ym.split("-"); return MONTH_NAMES[Number(p[1])-1]+" "+p[0]; }
+  function addMonths(ym, n){ var p=ym.split("-").map(Number); var total=p[0]*12+(p[1]-1)+n; var y=Math.floor(total/12); var m=(total%12+12)%12; return y+"-"+String(m+1).padStart(2,"0"); }
+  function monthsBetween(a,b){ var pa=a.split("-").map(Number), pb=b.split("-").map(Number); return (pb[0]-pa[0])*12+(pb[1]-pa[1]); }
+  function quarterLabel(ym){ var p=ym.split("-"); var q=Math.floor((Number(p[1])-1)/3)+1; return "Q"+q+" "+p[0]; }
+
+  // ---- derived calculations ----
+  function weekPL(w){ return w.days.reduce(function(s,d){ return s+(typeof d.pl==="number"?d.pl:0); },0); }
+  function weekClosing(w){ return w.openingBalance + weekPL(w); }
+  function weekDailyMax(w){ return w.openingBalance * state.settings.dailyMaxPct/100; }
+  function weekWeeklyMax(w){ return w.openingBalance * state.settings.weeklyMaxPct/100; }
+  function weekCompliance(w){
+    var good=0,bad=0,pend=0;
+    w.days.forEach(function(d){ if(d.status==="compliant") good++; else if(d.status==="breach") bad++; else pend++; });
+    return { good:good, bad:bad, pending:pend };
+  }
+  function weekFullyCompliant(w){ var c=weekCompliance(w); return c.bad===0 && c.pending===0; }
+  function sortedWeeks(){ return state.weeks.slice().sort(function(a,b){ return a.weekStart<b.weekStart?-1:1; }); }
+  function currentBalance(){ var ws=sortedWeeks(); return ws.length? weekClosing(ws[ws.length-1]) : state.meta.programStartBalance; }
+  function totalReturnPct(){ var start=state.meta.programStartBalance; return (currentBalance()-start)/start*100; }
+  function equitySeries(){
+    var pts=[{ label: state.meta.programStartLabel, value: state.meta.programStartBalance }];
+    sortedWeeks().forEach(function(w){ pts.push({ label: weekLabel(w.weekStart), value: weekClosing(w) }); });
+    return pts;
+  }
+  function streaks(){
+    var ws=sortedWeeks(), longest=0, run=0, current=0;
+    ws.forEach(function(w){ if(weekFullyCompliant(w)){ run++; longest=Math.max(longest,run); } else run=0; });
+    for(var i=ws.length-1;i>=0;i--){ if(weekFullyCompliant(ws[i])) current++; else break; }
+    return { current:current, longest:longest };
+  }
+  function allTimeCompliancePct(){
+    var good=0, evaluated=0;
+    sortedWeeks().forEach(function(w){ w.days.forEach(function(d){ if(d.status!=="pending"){ evaluated++; if(d.status==="compliant") good++; } }); });
+    return evaluated? good/evaluated*100 : null;
+  }
+  function disciplineScore(){
+    var c=allTimeCompliancePct(); if(c===null) return null;
+    var st=streaks();
+    return Math.max(0, Math.min(100, Math.round(c*0.8 + Math.min(st.current,10)*2)));
+  }
+  function prestigeTier(streakWeeks){
+    if(streakWeeks>=12) return "Platinum";
+    if(streakWeeks>=8) return "Gold";
+    if(streakWeeks>=4) return "Silver";
+    if(streakWeeks>=2) return "Bronze";
+    return "Unranked";
+  }
+  function longestDayStreak(){
+    var longest=0, run=0;
+    sortedWeeks().forEach(function(w){
+      w.days.forEach(function(d){ if(d.status==="compliant"){ run++; longest=Math.max(longest,run); } else if(d.status==="breach"){ run=0; } });
+    });
+    return longest;
+  }
+  function weekBadge(w){
+    var c=weekCompliance(w);
+    if(c.bad>0) return {text:"Breach", cls:"bad"};
+    if(c.pending>0) return {text:"In progress", cls:"pending"};
+    var ret = weekPL(w)/w.openingBalance*100;
+    var paceTarget = (Math.pow(1+state.scalingPlan.monthlyRatePct/100, 1/4.345)-1)*100;
+    if(ret>=paceTarget) return {text:"Elite week", cls:"gold"};
+    if(ret>=0) return {text:"On plan", cls:"good"};
+    return {text:"Recovery week", cls:"warn"};
+  }
+  function tradeStats(trades){
+    var wins=trades.filter(function(t){return t.result>0;});
+    var losses=trades.filter(function(t){return t.result<0;});
+    var grossWin=sum(wins.map(function(t){return t.result;}));
+    var grossLoss=Math.abs(sum(losses.map(function(t){return t.result;})));
+    var rrs=trades.filter(function(t){return typeof t.rr==="number";}).map(function(t){return t.rr;});
+    var best=trades.length? trades.reduce(function(a,b){return b.result>a.result?b:a;}) : null;
+    var worst=trades.length? trades.reduce(function(a,b){return b.result<a.result?b:a;}) : null;
+    return {
+      count: trades.length,
+      winRate: trades.length? wins.length/trades.length*100 : null,
+      avgWin: avg(wins.map(function(t){return t.result;})),
+      avgLoss: avg(losses.map(function(t){return t.result;})),
+      profitFactor: grossLoss>0? grossWin/grossLoss : (grossWin>0? null : null),
+      expectancy: avg(trades.map(function(t){return t.result;})),
+      avgRR: avg(rrs),
+      best: best, worst: worst
+    };
+  }
+  function filteredTrades(){
+    var trades = state.trades.slice().sort(function(a,b){ return a.date<b.date?1:-1; });
+    if(tradeFilter==="all") return trades;
+    var today = new Date(); var cutoff;
+    if(tradeFilter==="30d"){ cutoff = new Date(today); cutoff.setUTCDate(cutoff.getUTCDate()-30); }
+    else { cutoff = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1)); }
+    var cutoffISO = cutoff.toISOString().slice(0,10);
+    return trades.filter(function(t){ return t.date>=cutoffISO; });
+  }
+
+  function toast(msg){
+    var el=document.querySelector(".toast"); if(el) el.remove();
+    el=document.createElement("div"); el.className="toast"; el.textContent=msg;
+    document.body.appendChild(el); setTimeout(function(){ el.remove(); }, 2600);
+  }
+
+  // ---- chart ----
+  function chartSVG(series, opts){
+    opts=opts||{};
+    var w=880,h=220,padL=64,padR=16,padT=16,padB=28;
+    var vals=series.map(function(p){return p.value;});
+    if(opts.extra) vals=vals.concat(opts.extra.map(function(p){return p.value;}));
+    var max=Math.max.apply(null,vals)*1.08, min=Math.min(0,Math.min.apply(null,vals));
+    function x(i,n){ return padL+(n<=1?0:(w-padL-padR)*i/(n-1)); }
+    function y(v){ return padT+(h-padT-padB)*(1-(v-min)/(max-min||1)); }
+    var gridVals=[0,0.25,0.5,0.75,1].map(function(f){ return min+(max-min)*f; });
+    var grid=gridVals.map(function(gv){
+      return '<line class="grid" x1="'+padL+'" x2="'+(w-padR)+'" y1="'+y(gv)+'" y2="'+y(gv)+'"/>'+'<text x="4" y="'+(y(gv)+3)+'">'+esc(fmtMoneyCompact(gv))+"</text>";
+    }).join("");
+    var mainPath=series.map(function(p,i){ return (i===0?"M":"L")+x(i,series.length).toFixed(1)+","+y(p.value).toFixed(1); }).join(" ");
+    var dots=series.map(function(p,i){ return '<circle class="actual-dot" cx="'+x(i,series.length).toFixed(1)+'" cy="'+y(p.value).toFixed(1)+'" r="3.5"/>'; }).join("");
+    var labels=series.map(function(p,i){
+      if(series.length>1 && i!==0 && i!==series.length-1 && series.length>6 && i%Math.ceil(series.length/6)!==0) return "";
+      return '<text x="'+x(i,series.length).toFixed(1)+'" y="'+(h-8)+'" text-anchor="middle">'+esc(p.label)+"</text>";
+    }).join("");
+    var extraPath="", extraDots="";
+    if(opts.extra && opts.extra.length){
+      extraPath='<path class="target-line" d="'+opts.extra.map(function(p,i){ return (i===0?"M":"L")+x(i,opts.extra.length).toFixed(1)+","+y(p.value).toFixed(1); }).join(" ")+'"/>';
+      extraDots=[0,opts.extra.length-1].map(function(i){ return '<circle class="target-dot" cx="'+x(i,opts.extra.length).toFixed(1)+'" cy="'+y(opts.extra[i].value).toFixed(1)+'" r="3"/>'; }).join("");
+    }
+    return '<svg class="chart" viewBox="0 0 '+w+' '+h+'" style="width:100%;height:auto;display:block">'+grid+extraPath+extraDots+'<path class="actual-line" d="'+mainPath+'"/>'+dots+labels+"</svg>";
+  }
+
+  // ---- rollups ----
+  function monthlyRollup(){
+    var map={};
+    sortedWeeks().forEach(function(w){
+      var ym=w.weekStart.slice(0,7);
+      if(!map[ym]) map[ym]={ ym:ym, weeks:0, pl:0, openStart:null, good:0, evaluated:0 };
+      var m=map[ym]; m.weeks++; m.pl+=weekPL(w);
+      if(m.openStart===null) m.openStart=w.openingBalance;
+      w.days.forEach(function(d){ if(d.status!=="pending"){ m.evaluated++; if(d.status==="compliant") m.good++; } });
+    });
+    return Object.keys(map).sort().map(function(k){ return map[k]; });
+  }
+  function quarterlyRollup(){
+    var months=monthlyRollup(), map={};
+    months.forEach(function(m){
+      var qk=m.ym.slice(0,4)+"-"+quarterLabel(m.ym).slice(0,2);
+      if(!map[qk]) map[qk]={ label: quarterLabel(m.ym), pl:0, openStart:null, good:0, evaluated:0 };
+      var q=map[qk]; q.pl+=m.pl; if(q.openStart===null) q.openStart=m.openStart; q.good+=m.good; q.evaluated+=m.evaluated;
+    });
+    return Object.keys(map).sort().map(function(k){ return map[k]; });
+  }
+
+  // ---- scaling plan ----
+  function scalingTable(){
+    var sp=state.scalingPlan, n=monthsBetween(sp.startMonth, sp.endMonth), rows=[];
+    for(var i=0;i<=n;i++){
+      var ym=addMonths(sp.startMonth,i);
+      var target=sp.startBalance*Math.pow(1+sp.monthlyRatePct/100,i);
+      var weekInMonth=sortedWeeks().filter(function(w){ return w.weekStart.slice(0,7)===ym; }).pop();
+      rows.push({ ym:ym, target:target, actual: weekInMonth? weekClosing(weekInMonth) : null });
+    }
+    return rows;
+  }
+
+  // ---- report text ----
+  function reportText(w){
+    var comp=weekCompliance(w);
+    var lines=[];
+    lines.push("BLOSSOMBANX  |  WEEKLY REPORT");
+    lines.push("");
+    lines.push("Week: "+weekLabel(w.weekStart));
+    lines.push("Opening Balance: "+fmtMoney(w.openingBalance));
+    lines.push("Closing Balance: "+fmtMoney(weekClosing(w)));
+    lines.push("Weekly P/L: "+fmtMoney(weekPL(w)));
+    lines.push("Weekly Return: "+fmtPct(weekPL(w)/w.openingBalance*100,2));
+    lines.push("");
+    lines.push("Risk Framework");
+    lines.push("Daily max loss: "+fmtMoney(weekDailyMax(w)));
+    lines.push("Weekly max loss: "+fmtMoney(weekWeeklyMax(w)));
+    lines.push("Maximum losing trades/day: "+state.settings.maxLosingTrades);
+    lines.push("");
+    lines.push("Rule Compliance");
+    w.days.forEach(function(d){
+      var mark = d.status==="compliant"?"YES":d.status==="breach"?"NO":"pending";
+      lines.push(d.day+"\t"+(d.pl===null?"–":fmtMoney(d.pl))+"\t"+mark);
+    });
+    lines.push("");
+    lines.push("Weekly rule compliance: "+comp.good+" / 5 days");
+    lines.push("");
+    lines.push("Notes:");
+    lines.push(w.notes || "–");
+    return lines.join("\n");
+  }
+
+  // ---- render ----
+  function renderTabs(){
+    var nav=document.getElementById("tabs");
+    nav.innerHTML=TABS.map(function(t){ return '<button class="tab-btn'+(t.id===activeTab?" active":"")+'" data-tab="'+t.id+'">'+t.label+"</button>"; }).join("");
+    nav.querySelectorAll(".tab-btn").forEach(function(btn){ btn.addEventListener("click", function(){ activeTab=btn.getAttribute("data-tab"); render(); }); });
+  }
+  function renderTopbar(){
+    document.getElementById("topbar-balance").textContent=fmtMoney(currentBalance());
+    document.getElementById("updated-pill").textContent="Updated "+fmtDate(state.meta.lastUpdated);
+  }
+
+  function renderOverview(){
+    var ws=sortedWeeks(), w0=ws[ws.length-1];
+    var comp=w0? weekCompliance(w0) : {good:0,bad:0,pending:5};
+    var retPct=totalReturnPct();
+    var html="";
+    html+='<div class="card"><div class="card-head"><h2>Since '+esc(state.meta.programStartLabel)+'</h2></div><div class="stat-grid">'+
+      '<div class="stat-tile"><div class="lbl">Programme start</div><div class="val">'+fmtMoney(state.meta.programStartBalance)+'</div></div>'+
+      '<div class="stat-tile"><div class="lbl">Current balance</div><div class="val">'+fmtMoney(currentBalance())+'</div></div>'+
+      '<div class="stat-tile"><div class="lbl">Return to date</div><div class="val '+(retPct>=0?"up":"down")+'">'+fmtPct(retPct,1)+'</div></div>'+
+      '<div class="stat-tile"><div class="lbl">This week compliance</div><div class="val">'+comp.good+'/5<span class="sub"> rules kept</span></div></div>'+
+      '</div></div>';
+    html+='<div class="card"><h2 style="margin-bottom:12px">Equity curve</h2>'+chartSVG(equitySeries())+'</div>';
+    html+='<div class="card"><div class="card-head"><h2>Three non-negotiables</h2></div><div class="nonneg">'+
+      '<div class="item"><div class="n">01</div><div class="t">Max daily loss: '+state.settings.dailyMaxPct+'%</div><div class="d">Never exceed it — currently '+fmtMoney(w0?weekDailyMax(w0):0)+' this week.</div></div>'+
+      '<div class="item"><div class="n">02</div><div class="t">Max weekly loss: '+state.settings.weeklyMaxPct+'%</div><div class="d">If reached, trading stops until next week — currently '+fmtMoney(w0?weekWeeklyMax(w0):0)+'.</div></div>'+
+      '<div class="item"><div class="n">03</div><div class="t">'+state.settings.maxLosingTrades+' losses = done</div><div class="d">That many losing positions closes the platform for the day.</div></div>'+
+      '</div></div>';
+    if(w0){
+      var badge=weekBadge(w0);
+      html+='<div class="card"><div class="card-head"><h2>This week — '+esc(weekLabel(w0.weekStart))+'</h2><span class="pill '+badge.cls+'">'+badge.text+'</span></div>'+
+        '<div class="hint" style="margin-bottom:10px">Opening '+fmtMoney(w0.openingBalance)+' · Daily max '+fmtMoney(weekDailyMax(w0))+' · Weekly max '+fmtMoney(weekWeeklyMax(w0))+'</div>'+
+        '<div class="day-grid">'+w0.days.map(function(d){
+          var pc=d.status==="compliant"?"good":d.status==="breach"?"bad":"pending";
+          var pt=d.status==="compliant"?"On plan":d.status==="breach"?"Breach":"Pending";
+          return '<div class="day-cell"><div class="day-name">'+d.day+'</div><div class="num">'+(d.pl===null?"–":fmtMoney(d.pl))+'</div><span class="pill '+pc+'">'+pt+'</span></div>';
+        }).join("")+'</div></div>';
+    }
+    document.getElementById("app").innerHTML=html;
+  }
+
+  function renderLedger(){
+    var ws=sortedWeeks();
+    var html="";
+    html+='<div class="card"><h2 style="margin-bottom:12px">Risk ladder</h2><div class="table-wrap"><table>'+
+      '<thead><tr><th>Week</th><th>Opening</th><th>Daily max</th><th>Weekly max</th><th>Closing</th><th>P/L</th><th>Return</th><th>Compliance</th><th>Week</th></tr></thead><tbody>'+
+      (ws.length?ws.slice().reverse().map(function(w){
+        var comp=weekCompliance(w), pl=weekPL(w), badge=weekBadge(w);
+        return '<tr><td>'+esc(weekLabel(w.weekStart))+'</td><td class="num">'+fmtMoney(w.openingBalance)+'</td>'+
+          '<td class="num">'+fmtMoney(weekDailyMax(w))+'</td><td class="num">'+fmtMoney(weekWeeklyMax(w))+'</td>'+
+          '<td class="num">'+fmtMoney(weekClosing(w))+'</td><td class="num '+(pl>=0?"up":"down")+'">'+fmtMoney(pl)+'</td>'+
+          '<td class="num '+(pl>=0?"up":"down")+'">'+fmtPct(pl/w.openingBalance*100,2)+'</td>'+
+          '<td><span class="pill '+(comp.bad>0?"bad":comp.pending>0?"pending":"good")+'">'+comp.good+'/5</span></td>'+
+          '<td><span class="pill '+badge.cls+'">'+badge.text+'</span></td></tr>';
+      }).join(""):'<tr><td colspan="9"><div class="empty-state">No weeks logged yet.</div></td></tr>')+
+      '</tbody></table></div></div>';
+
+    var months=monthlyRollup(), quarters=quarterlyRollup();
+    html+='<div class="card"><h2 style="margin-bottom:12px">Monthly rollup</h2><div class="table-wrap"><table>'+
+      '<thead><tr><th>Month</th><th>Weeks</th><th>P/L</th><th>Return</th><th>Compliance</th></tr></thead><tbody>'+
+      (months.length?months.map(function(m){
+        return '<tr><td>'+esc(monthLabel(m.ym))+'</td><td class="num">'+m.weeks+'</td>'+
+          '<td class="num '+(m.pl>=0?"up":"down")+'">'+fmtMoney(m.pl)+'</td>'+
+          '<td class="num '+(m.pl>=0?"up":"down")+'">'+fmtPct(m.pl/m.openStart*100,2)+'</td>'+
+          '<td>'+(m.evaluated?m.good+"/"+m.evaluated:"–")+'</td></tr>';
+      }).join(""):'<tr><td colspan="5"><div class="empty-state">Not enough history yet.</div></td></tr>')+
+      '</tbody></table></div></div>';
+
+    html+='<div class="card"><h2 style="margin-bottom:12px">Quarterly rollup</h2><div class="table-wrap"><table>'+
+      '<thead><tr><th>Quarter</th><th>P/L</th><th>Return</th><th>Compliance</th></tr></thead><tbody>'+
+      (quarters.length?quarters.map(function(q){
+        return '<tr><td>'+esc(q.label)+'</td><td class="num '+(q.pl>=0?"up":"down")+'">'+fmtMoney(q.pl)+'</td>'+
+          '<td class="num '+(q.pl>=0?"up":"down")+'">'+fmtPct(q.pl/q.openStart*100,2)+'</td>'+
+          '<td>'+(q.evaluated?q.good+"/"+q.evaluated:"–")+'</td></tr>';
+      }).join(""):'<tr><td colspan="4"><div class="empty-state">Not enough history yet.</div></td></tr>')+
+      '</tbody></table></div></div>';
+
+    html+='<div class="card"><div class="card-head"><h2>Investor report export</h2>'+
+      '<select id="report-week-select" class="field">'+ws.slice().reverse().map(function(w){ return '<option value="'+w.id+'">'+esc(weekLabel(w.weekStart))+'</option>'; }).join("")+'</select></div>'+
+      '<textarea class="report-box" id="report-box" readonly></textarea>'+
+      '<div style="margin-top:10px"><button class="btn" id="copy-report-btn">Copy to clipboard</button></div></div>';
+
+    document.getElementById("app").innerHTML=html;
+
+    var sel=document.getElementById("report-week-select");
+    var box=document.getElementById("report-box");
+    function refreshReport(){
+      var w = ws.find(function(x){ return x.id===sel.value; }) || ws[ws.length-1];
+      if(w) box.value = reportText(w);
+    }
+    if(sel){ sel.addEventListener("change", refreshReport); refreshReport(); }
+    var copyBtn=document.getElementById("copy-report-btn");
+    if(copyBtn) copyBtn.addEventListener("click", function(){
+      box.select();
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(box.value).then(function(){ toast("Report copied."); }).catch(function(){
+          try{ document.execCommand("copy"); toast("Report copied."); }catch(e){ toast("Select the text above and copy manually."); }
+        });
+      } else {
+        try{ document.execCommand("copy"); toast("Report copied."); }catch(e){ toast("Select the text above and copy manually."); }
+      }
+    });
+  }
+
+  function renderPositions(){
+    var html='<div class="card"><h2 style="margin-bottom:12px">Open positions</h2><div class="table-wrap"><table>'+
+      '<thead><tr><th>Pair</th><th>Direction</th><th>Size</th><th>Entry</th><th>Notes</th></tr></thead><tbody>'+
+      (state.positions.length?state.positions.map(function(p){
+        return '<tr><td>'+esc(p.pair)+'</td><td>'+esc(p.direction)+'</td><td class="num">'+esc(p.size)+'</td><td class="num">'+esc(p.entry)+'</td><td class="wrap">'+esc(p.notes||"")+'</td></tr>';
+      }).join(""):'<tr><td colspan="5"><div class="empty-state">No open positions logged.</div></td></tr>')+
+      '</tbody></table></div></div>';
+    document.getElementById("app").innerHTML=html;
+  }
+
+  function renderTrades(){
+    var trades=filteredTrades();
+    var html='<div class="card"><div class="card-head"><h2>Trade log</h2><select id="trade-filter" class="field">'+
+      '<option value="all"'+(tradeFilter==="all"?" selected":"")+'>All time</option>'+
+      '<option value="30d"'+(tradeFilter==="30d"?" selected":"")+'>Last 30 days</option>'+
+      '<option value="month"'+(tradeFilter==="month"?" selected":"")+'>This month</option>'+
+      '</select></div><div class="table-wrap"><table>'+
+      '<thead><tr><th>Date</th><th>Pair</th><th>Direction</th><th>Size</th><th>Result</th><th>R:R</th><th>Notes</th></tr></thead><tbody>'+
+      (trades.length?trades.map(function(t){
+        return '<tr><td>'+esc(t.date)+'</td><td>'+esc(t.pair)+'</td><td>'+esc(t.direction)+'</td><td class="num">'+esc(t.size)+'</td>'+
+          '<td class="num '+(t.result>=0?"up":"down")+'">'+fmtMoney(t.result)+'</td><td class="num">'+(typeof t.rr==="number"?"1:"+t.rr.toFixed(1):"–")+'</td>'+
+          '<td class="wrap">'+esc(t.notes||"")+'</td></tr>';
+      }).join(""):'<tr><td colspan="7"><div class="empty-state">No trades logged'+(tradeFilter!=="all"?" in this range":" yet")+'.</div></td></tr>')+
+      '</tbody></table></div></div>';
+    document.getElementById("app").innerHTML=html;
+    var sel=document.getElementById("trade-filter");
+    sel.addEventListener("change", function(){ tradeFilter=sel.value; render(); });
+  }
+
+  function renderScorecard(){
+    var score=disciplineScore();
+    var st=streaks();
+    var tier=prestigeTier(st.current);
+    var stats=tradeStats(state.trades);
+    var pct = score===null?0:score;
+    var circumference = 2*Math.PI*46;
+    var offset = circumference*(1-pct/100);
+    var html='';
+
+    html+='<div class="card"><h2 style="margin-bottom:14px">Discipline score</h2><div class="score-wrap">'+
+      '<div class="score-ring"><svg viewBox="0 0 112 112"><circle class="track" cx="56" cy="56" r="46"/>'+
+      '<circle class="fill" cx="56" cy="56" r="46" stroke-dasharray="'+circumference.toFixed(1)+'" stroke-dashoffset="'+offset.toFixed(1)+'"/></svg>'+
+      '<div class="num"><b>'+(score===null?"–":score)+'</b><span>/ 100</span></div></div>'+
+      '<div><span class="tier-badge pill gold">'+tier+' tier</span>'+
+      '<div class="hint" style="margin-top:8px">Current streak: '+st.current+' fully compliant week'+(st.current===1?"":"s")+' · Longest streak: '+st.longest+'<br>'+
+      'Longest compliant-day run: '+longestDayStreak()+' days · All-time rule compliance: '+(allTimeCompliancePct()===null?"–":allTimeCompliancePct().toFixed(0)+"%")+'</div>'+
+      '<div class="badge-row">'+
+        (st.current>=2?'<span class="pill good">Bronze unlocked</span>':'')+
+        (st.current>=4?'<span class="pill good">Silver unlocked</span>':'')+
+        (st.current>=8?'<span class="pill good">Gold unlocked</span>':'')+
+        (st.current>=12?'<span class="pill gold">Platinum unlocked</span>':'')+
+      '</div></div></div></div>';
+
+    html+='<div class="card"><h2 style="margin-bottom:12px">Trade performance</h2><div class="stat-grid">'+
+      '<div class="stat-tile"><div class="lbl">Win rate</div><div class="val">'+(stats.winRate===null?"–":stats.winRate.toFixed(0)+"%")+'</div><div class="sub">'+stats.count+' trades logged</div></div>'+
+      '<div class="stat-tile"><div class="lbl">Profit factor</div><div class="val">'+(stats.profitFactor===null?"–":stats.profitFactor.toFixed(2))+'</div></div>'+
+      '<div class="stat-tile"><div class="lbl">Avg R:R</div><div class="val">'+(stats.avgRR===null?"–":"1:"+stats.avgRR.toFixed(1))+'</div></div>'+
+      '<div class="stat-tile"><div class="lbl">Expectancy / trade</div><div class="val">'+fmtMoney(stats.expectancy)+'</div></div>'+
+      '<div class="stat-tile"><div class="lbl">Avg win</div><div class="val up">'+fmtMoney(stats.avgWin)+'</div></div>'+
+      '<div class="stat-tile"><div class="lbl">Avg loss</div><div class="val down">'+fmtMoney(stats.avgLoss)+'</div></div>'+
+      '<div class="stat-tile"><div class="lbl">Best trade</div><div class="val up">'+(stats.best?fmtMoney(stats.best.result):"–")+'</div><div class="sub">'+(stats.best?esc(stats.best.pair)+" · "+esc(stats.best.date):"")+'</div></div>'+
+      '<div class="stat-tile"><div class="lbl">Worst trade</div><div class="val down">'+(stats.worst?fmtMoney(stats.worst.result):"–")+'</div><div class="sub">'+(stats.worst?esc(stats.worst.pair)+" · "+esc(stats.worst.date):"")+'</div></div>'+
+      '</div></div>';
+    document.getElementById("app").innerHTML=html;
+  }
+
+  function renderScaling(){
+    var sp=state.scalingPlan, rows=scalingTable();
+    var target=rows[rows.length-1].target;
+    var html='<div class="card"><div class="stat-grid">'+
+      '<div class="stat-tile"><div class="lbl">Target by '+esc(monthLabel(sp.endMonth))+'</div><div class="val">'+fmtMoneyCompact(target)+'</div></div>'+
+      '<div class="stat-tile"><div class="lbl">Monthly compounding</div><div class="val">'+sp.monthlyRatePct+'%</div></div>'+
+      '<div class="stat-tile"><div class="lbl">Horizon</div><div class="val">'+rows.length+' months</div></div></div></div>';
+    var series=rows.filter(function(r){return r.actual!==null;}).map(function(r){return {label:monthLabel(r.ym), value:r.actual};});
+    if(!series.length) series=[{label:monthLabel(sp.startMonth), value:sp.startBalance}];
+    var targetSeries=rows.map(function(r){return {label:monthLabel(r.ym), value:r.target};});
+    html+='<div class="card"><h2 style="margin-bottom:4px">Target vs. actual</h2><div class="hint" style="margin-bottom:12px">Dashed = '+sp.monthlyRatePct+'%/mo target · Solid = actual closing balance</div>'+chartSVG(series,{extra:targetSeries})+'</div>';
+    html+='<div class="card"><h2 style="margin-bottom:12px">Monthly ladder</h2><div class="table-wrap"><table>'+
+      '<thead><tr><th>Month</th><th>Target balance</th><th>Actual closing</th><th>Delta</th></tr></thead><tbody>'+
+      rows.map(function(r){
+        var delta=r.actual===null?null:r.actual-r.target;
+        return '<tr><td>'+esc(monthLabel(r.ym))+'</td><td class="num">'+fmtMoney(r.target)+'</td><td class="num">'+(r.actual===null?"–":fmtMoney(r.actual))+'</td>'+
+          '<td class="num '+(delta===null?"":(delta>=0?"up":"down"))+'">'+(delta===null?"–":fmtMoney(delta))+'</td></tr>';
+      }).join("")+'</tbody></table></div></div>';
+    document.getElementById("app").innerHTML=html;
+  }
+
+  function renderCalculator(){
+    var html='<div class="card"><h2 style="margin-bottom:4px">Position size calculator</h2>'+
+      '<div class="hint" style="margin-bottom:14px">Sizes a trade so a stop-out costs no more than your chosen risk — nothing here is saved.</div>'+
+      '<div class="calc-grid">'+
+      '<div class="field"><label>Account balance (£)</label><input type="number" step="0.01" id="c-balance" value="'+currentBalance().toFixed(2)+'"></div>'+
+      '<div class="field"><label>Risk this trade (%)</label><input type="number" step="0.1" id="c-risk" value="'+state.settings.dailyMaxPct+'"></div>'+
+      '<div class="field"><label>Stop-loss distance (pips)</label><input type="number" step="0.1" id="c-sl" value="20"></div>'+
+      '<div class="field"><label>Take-profit distance (pips)</label><input type="number" step="0.1" id="c-tp" value="40"></div>'+
+      '<div class="field"><label>Value per pip, 1 lot (£)</label><input type="number" step="0.01" id="c-pip" value="10"></div>'+
+      '</div>'+
+      '<div class="calc-result" id="calc-result"></div></div>';
+    document.getElementById("app").innerHTML=html;
+    var ids=["c-balance","c-risk","c-sl","c-tp","c-pip"];
+    function recalc(){
+      var balance=Number(document.getElementById("c-balance").value)||0;
+      var riskPct=Number(document.getElementById("c-risk").value)||0;
+      var sl=Number(document.getElementById("c-sl").value)||0;
+      var tp=Number(document.getElementById("c-tp").value)||0;
+      var pip=Number(document.getElementById("c-pip").value)||0;
+      var riskAmount=balance*riskPct/100;
+      var lots = (sl>0 && pip>0)? riskAmount/(sl*pip) : 0;
+      var rewardAmount = tp*pip*lots;
+      var rr = sl>0? tp/sl : 0;
+      document.getElementById("calc-result").innerHTML =
+        '<div>Risk amount: <span class="big">'+fmtMoney(riskAmount)+'</span></div>'+
+        '<div class="hint" style="margin-top:8px">Position size: <b class="num">'+lots.toFixed(2)+' lots</b> · Potential reward: <b class="num">'+fmtMoney(rewardAmount)+'</b> · Risk:Reward <b class="num">1:'+rr.toFixed(1)+'</b></div>';
+    }
+    ids.forEach(function(id){ document.getElementById(id).addEventListener("input", recalc); });
+    recalc();
+  }
+
+  function renderAudit(){
+    var entries=state.changelog.slice().sort(function(a,b){ return a.date<b.date?1:-1; });
+    var html='<div class="card"><h2 style="margin-bottom:12px">Audit trail</h2><div class="hint" style="margin-bottom:14px">Every change to this dashboard’s figures is logged here with a date, so the history can’t be quietly edited.</div>'+
+      '<div class="log-list">'+
+      (entries.length?entries.map(function(e){ return '<div class="log-item"><div class="date">'+esc(fmtDate(e.date))+'</div><div class="note">'+esc(e.note)+'</div></div>'; }).join(""):'<div class="empty-state">No entries yet.</div>')+
+      '</div></div>';
+    document.getElementById("app").innerHTML=html;
+  }
+
+  function render(){
+    renderTabs(); renderTopbar();
+    if(activeTab==="overview") renderOverview();
+    else if(activeTab==="ledger") renderLedger();
+    else if(activeTab==="positions") renderPositions();
+    else if(activeTab==="trades") renderTrades();
+    else if(activeTab==="scorecard") renderScorecard();
+    else if(activeTab==="scaling") renderScaling();
+    else if(activeTab==="calculator") renderCalculator();
+    else if(activeTab==="audit") renderAudit();
+  }
+
+  render();
+})();
+</script>
+
+</body>
+</html>
